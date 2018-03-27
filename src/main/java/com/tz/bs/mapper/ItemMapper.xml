@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.tz.bs.mapper.ItemMapper">
+	
+	
+	<select id="selectItemByID" resultType="OrderItem">
+		select * from bs_orderItem where itemId=#{id}
+	</select>
+	
+	<delete id="deleteItemsByOrderID">
+		delete from bs_orderItem where order_id=#{id}
+	</delete>
+
+	<select id="selectItemByOrderID"  resultType="OrderItem">
+		select * from bs_orderItem where order_id=#{id}		
+	</select>
+	<!-- bs_orderItem
+	itemId 			number(7) 		primary key,
+	book_isbn 		varchar2(30),
+	book_name 		varchar2(30),
+	book_author 	varchar2(30),
+	unit_price 		number(7,2),
+	book_url 		varchar2(100),
+	count 			number(7),
+  	allPrice 		number(7,2),
+	order_id 		number(7)
+	 -->
+	<insert id="insertItem" parameterType="OrderItem">
+		<selectKey order="BEFORE" resultType="Long" keyProperty="item.itemId">
+			select
+			bs_orderitem_id.nextval from dual
+		</selectKey>
+		INSERT into bs_orderItem
+		VALUES(#{item.itemId},#{item.book_isbn},#{item.book_name},#{item.book_author},#{item.unit_price},#{item.book_url},#{item.count},#{item.allPrice},#{orderid})
+	</insert>
+	
+	
+	<insert id="insertItemBitch" parameterType="java.util.List">
+		INSERT into bs_orderItem select bs_orderitem_id.nextval,a.*,bs_order_id.currval from(
+		<foreach collection="list" item="item" separator="union">
+			select #{item.book_isbn},#{item.book_name},#{item.book_author},#{item.unit_price},#{item.book_url},#{item.count},#{item.allPrice} from dual
+		</foreach>
+		) a
+	</insert>
+
+
+</mapper>

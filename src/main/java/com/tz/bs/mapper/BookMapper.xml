@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.tz.bs.mapper.BookMapper">
+	<resultMap type="Book" id="BookCate">
+		<id property="bookid" column="bookid" />
+		<result property="name" column="name" />
+		<result property="isbn" column="isbn" />
+		<result property="author" column="author" />
+		<result property="publishHouse" column="publishHouse" />
+		<result property="publishDate" column="publishDate" />
+		<result property="oldPrice" column="oldPrice" />
+		<result property="newPrice" column="newPrice" />
+		<result property="authorLoc" column="authorLoc" />
+		<result property="info" column="info" />
+		<result property="imageurl" column="imageurl" />
+		<result property="suit" column="suit" />
+		<association property="category" column="category_id"
+			select="getCate" />
+	</resultMap>
+
+	<select id="getCate" parameterType="Long" resultType="category">
+		select
+		cateid,CATENAME from BS_CATEGORY where cateid=#{id}
+	</select>
+
+	<select id="selectBookById" resultMap="BookCate">
+		select * from bs_book
+		where bookid=#{id}
+	</select>
+
+	<select id="selectAllBooks" resultMap="BookCate">
+		select * from bs_book
+	</select>
+
+	<select id="rowCount" resultType="Integer">
+		select count(1) from bs_book
+		<where>
+			<if test="cate!=null">
+				category_id=#{cate}
+			</if>
+		</where>
+	</select>
+	<select id="selectCategory" resultType="Category">
+		select cateid,CATENAME
+		from bs_category
+	</select>
+
+	<select id="selectBooksbyCondition" resultMap="BookCate">
+		
+		select outer_.* from
+		(
+		select rownum rownum_,core_.* from
+		(
+		select * from bs_book <where>
+		<if test="cate!=null">
+		category_id =${cate}
+		</if>
+		<if test="str!=null">
+		and name like '%${str}%'
+		</if>
+		</where>
+		) core_ where rownum &lt; =${pageNow}*${pageSize}
+		) outer_ where outer_.rownum_ &gt;(${pageNow}-1)*${pageSize}
+	
+	</select>
+
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.tz.bs.mapper.AddressMapper">
+	<select id="selectAddrByID" resultType="address">
+		select * from bs_address where addressid=#{id}
+	</select>
+	
+	<delete id="deleteAddr">
+		delete from bs_address where addressid=#{id}
+	</delete>
+
+	<select id="selectAddrsByUserID"  resultType="address">
+		select * from bs_address where auser_id=#{id}		
+	</select>
+	
+	<insert id="insertAddr" parameterType="address">
+		<selectKey order="BEFORE" resultType="Long" keyProperty="addressid">
+			select
+			bs_address_id.nextval from dual
+		</selectKey>
+		INSERT into bs_address
+		VALUES(#{addressid},#{area},#{detailaddress},#{emailcode},#{reciver},#{tel},#{isDefault},#{user.userid})
+	</insert>
+	<update id="updateAddr" parameterType="address">
+		update bs_address
+		<set>
+			<if test="area!=null">
+				area=#{area}
+			</if>
+
+			<if test="detailaddress!=null">
+				detailaddress=#{detailaddress},
+			</if>
+			<if test="emailcode!=null">
+				emailcode=#{emailcode},
+			</if>
+			<if test="reciver!=null">
+				reciver=#{reciver},
+			</if>
+			<if test="tel!=null">
+				tel=#{tel},
+			</if>
+			<if test="isDefault!=null">
+				isDefault=#{isDefault},
+			</if>
+			
+		</set>
+		where addressid=#{addressid}
+	</update>
+	
+	<update id="cleanDefaultAddress">
+		update bs_address set isDefault='0' where auser_id=#{id} and isDefault ='1'
+	</update>
+	
+
+</mapper>

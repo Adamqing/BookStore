@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.tz.bs.mapper.OrderMapper">
+
+	<resultMap type="order" id="orderUser">
+		<id property="orderId" column="orderId" />
+		<result property="orderNum" column="orderNum" />
+		<result property="createDate" column="createDate" />
+		<result property="orderStatus" column="orderStatus" />
+		<result property="user.userid" column="ouser_id" />
+		<result property="total" column="total" />
+		<association property="address" column="address_id"
+			select="com.tz.bs.mapper.AddressMapper.selectAddrByID"></association>
+		<collection property="items" column="orderId"
+			select="com.tz.bs.mapper.ItemMapper.selectItemByOrderID">
+		</collection>
+	</resultMap>
+
+
+	<delete id="deleteOrderByID">
+		delete from bs_order where orderid=#{id}
+	</delete>
+
+	<select id="selectOrderByID" resultMap="orderUser">
+		select * from bs_order
+		where orderid=#{id}
+	</select>
+	<select id="selectOrderByOrderNum" resultMap="orderUser"
+		parameterType="String">
+		select * from bs_order
+		where orderNum = #{orderNum}
+	</select>
+
+	<!-- orderId number(7) primary key, orderNum varchar2(40), createDate date, 
+		orderStatus varchar2(20), ouser_id number(7), address_id number(7), total 
+		number(5,2) -->
+
+	<insert id="insertOrder" parameterType="order">
+		<selectKey order="BEFORE" resultType="Long" keyProperty="orderId">
+			select
+			bs_order_id.nextval from dual
+		</selectKey>
+		INSERT into bs_order
+		VALUES(#{orderId},#{orderNum},#{createDate},#{orderStatus},#{user.userid},#{address.addressid},#{total})
+	</insert>
+
+	<update id="updateOrder" parameterType="order">
+		update bs_order
+		<set>
+			<if test="orderStatus!=null">
+				orderStatus=#{orderStatus},
+			</if>
+		</set>
+		where orderid=#{orderId}
+	</update>
+
+	<select id="countOrderByUserIDAndSearch" resultType="Integer">
+		select count(1) from
+		bs_order 
+		<where>
+			<if test="search!=null">
+				<if test="search.orderNum!=null">
+					orderNum like '%'||#{search.orderNum}||'%'
+				</if>
+				<if test="search.beginDate!=null">
+					and createDate>=#{search.beginDate}
+				</if>
+				<if test="search.endDate!=null">
+					and createDate &lt;=#{search.endDate}
+				</if>
+				<if test="search.orderStatus!=null">
+					and orderStatus =#{search.orderStatus}
+				</if>
+			</if>
+			and ouser_id=#{uid}
+		</where>
+	</select>
+
+
+	<select id="selectOrderPageByUserID" resultMap="orderUser">
+		select outer_.* from
+		(
+		select rownum rownum_,core_.* from
+		(
+		select * from
+		bs_order
+		<where>
+
+			<if test="search!=null">
+				<if test="search.orderNum!=null">
+					orderNum like '%'||#{search.orderNum}||'%'
+				</if>
+				<if test="search.beginDate!=null">
+					and createDate>=#{search.beginDate}
+				</if>
+				<if test="search.endDate!=null">
+					and createDate &lt;=#{search.endDate}
+				</if>
+				<if test="search.orderStatus!=null">
+					and orderStatus =#{search.orderStatus}
+				</if>
+			</if>
+
+			and ouser_id=#{uid}
+		</where>
+		) core_ where rownum &lt; =${pageNow}*${pageSize}
+		)
+		outer_ where
+		outer_.rownum_ &gt;(${pageNow}-1)*${pageSize}
+
+		<if test="search!=null">
+
+			<if test="search.isOrderByTime==1">
+				order by createDate asc
+			</if>
+			<if test="search.isOrderByTime==0">
+				order by createDate desc
+			</if>
+		</if>
+
+
+	</select>
+
+</mapper>

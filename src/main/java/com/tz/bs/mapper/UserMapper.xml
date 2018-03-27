@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.tz.bs.mapper.UserMapper">
+
+	<select id="selectUser" resultType="user">
+		select * from bs_user where
+		userid=#{id}
+	</select>
+	<select id="selectUserByUserName" resultType="user">
+		select * from bs_user where
+		username=#{name}
+	</select>
+
+	<insert id="insertUser" parameterType="user">
+		<selectKey order="BEFORE" resultType="Long" keyProperty="userid">
+			select
+			bs_user_id.nextval from dual
+		</selectKey>
+		INSERT into bs_user
+		VALUES(#{userid},#{userName},#{password},#{phone},#{email},#{company})
+	</insert>
+	<update id="updateUser" parameterType="user">
+
+		update bs_user
+		<set>
+			<if test="userName!=null">
+				username=#{userName},
+			</if>
+
+			<if test="password!=null">
+				password=#{password},
+			</if>
+			<if test="phone!=null">
+				phone=#{phone},
+			</if>
+			<if test="email!=null">
+				email=#{email},
+			</if>
+			<if test="company!=null">
+				company=#{company},
+			</if>
+		</set>
+		where userid=#{userid}
+	</update>
+
+
+
+</mapper>
